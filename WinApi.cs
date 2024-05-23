@@ -35,7 +35,7 @@ public static partial class Kernel32
         ThreadStart lpStartAddress,
         IntPtr lpParameter,
         uint dwCreationFlags,
-        out uint lpThreadId);
+        out nint lpThreadId);
 
     [LibraryImport(LibraryName, SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]

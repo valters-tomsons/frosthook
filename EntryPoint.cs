@@ -6,8 +6,8 @@ namespace frosthook;
 
 public static class EntryPoint
 {
+    public static nint HookThreadId = 0;
     private static readonly ThreadStart HookThread = new(FrostHook.Initialize);
-    private static uint _hookThreadId = 0;
 
     [UnmanagedCallersOnly(EntryPoint = nameof(DllMain), CallConvs = [typeof(CallConvStdcall)])]
     public static bool DllMain(IntPtr hModule, uint ul_reason_for_call, IntPtr lpReserved)
@@ -17,8 +17,8 @@ public static class EntryPoint
             Console.WriteLine($"frosthook attaching, hModule = 0x{hModule:X0}");
 
             UnprotectCurrentProcess();
-            Kernel32.CreateThread(IntPtr.Zero, 0, HookThread, IntPtr.Zero, 0, out _hookThreadId);
-            Console.WriteLine($"threadId created = 0x{_hookThreadId:X0}");
+            Kernel32.CreateThread(IntPtr.Zero, 0, HookThread, IntPtr.Zero, 0, out HookThreadId);
+            Console.WriteLine($"threadId created = 0x{HookThreadId:X0}");
         }
 
         return true;
@@ -36,7 +36,7 @@ public static class EntryPoint
         }
 
         Console.WriteLine($"MainModule = {module.ModuleName}, 0x{module.BaseAddress:X0}");
-        var success = Kernel32.VirtualProtect(module.BaseAddress, (uint)module.ModuleMemorySize, MemoryProtection.PAGE_EXECUTE_READWRITE, out uint oldProtection);
+        var success = Kernel32.VirtualProtect(module.BaseAddress, (uint)module.ModuleMemorySize, MemoryProtection.PAGE_EXECUTE_READWRITE, out var oldProtection);
         Console.WriteLine($"{nameof(UnprotectCurrentProcess)} = {success}, {oldProtection}");
     }
 }
