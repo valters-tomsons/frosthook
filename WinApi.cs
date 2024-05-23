@@ -27,7 +27,6 @@ public static partial class Kernel32
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool VirtualProtect(IntPtr lpAddress, uint dwSize, MemoryProtection flNewProtect, out uint lpflOldProtect);
 
-
     [LibraryImport(LibraryName, SetLastError = true)]
     public static partial IntPtr CreateThread(
         IntPtr lpThreadAttributes,

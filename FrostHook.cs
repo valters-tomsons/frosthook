@@ -1,7 +1,11 @@
+using System.Runtime.InteropServices;
+
 namespace frosthook;
 
 public static class FrostHook
 {
+    private static readonly IntPtr NetworkProtocolServerR11 = new(0x1753911);
+
     private static readonly ThreadStart HookThread = new(Initialize);
     private static nint _threadId = 0;
 
@@ -11,11 +15,11 @@ public static class FrostHook
         Console.WriteLine($"threadId created = 0x{_threadId:X0}");
     }
 
-    private static void Initialize()
+    private unsafe static void Initialize()
     {
-        Console.WriteLine("frosthook thread says hellolize!");
-        Thread.Sleep(500);
-        Console.WriteLine("frosthook cleaning up!");
+        var versionString = Marshal.PtrToStringAnsi(NetworkProtocolServerR11);
+        Console.WriteLine($"Executable Version: {versionString}");
+
         Kernel32.CloseHandle(_threadId);
     }
 }
