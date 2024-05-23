@@ -11,12 +11,27 @@ public class Win32ServerR11
     private static readonly IntPtr NetworkProtocolServerR11 = new(0x1753911);
     private static readonly byte[] NetworkProtocolOverride = Encoding.ASCII.GetBytes("RETAIL133337");
 
-    public static string GetExecutableNetworkProtocol()
+    public static void OnLoad()
+    {
+        var version = GetNetworkProtocolVersion();
+        Console.WriteLine($"Executable Version: {version}");
+
+        OverrideNetworkProtocol();
+        Console.WriteLine("frosthook finished");
+    }
+
+    public static void OnHook()
+    {
+        var version = GetNetworkProtocolVersion();
+        Console.WriteLine($"Runtime Version: {version}");
+    }
+
+    private static string GetNetworkProtocolVersion()
     {
         return Marshal.PtrToStringAnsi(NetworkProtocolServerR11)?.TrimEnd('"') ?? throw new Exception("Failed to read version, goodbye!");
     }
 
-    public unsafe static void OverrideNetworkProtocol()
+    private unsafe static void OverrideNetworkProtocol()
     {
         byte* ptr = (byte*)NetworkProtocolServerR11.ToPointer();
         for (int i = 0; i < NetworkProtocolOverride.Length; i++)

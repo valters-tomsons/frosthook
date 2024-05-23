@@ -13,7 +13,9 @@ public static class EntryPoint
         {
             Console.WriteLine($"frosthook attached, hModule = 0x{hModule:X0}, 0x{lpReserved:X0}");
             UnprotectProcess();
-            FrostHook.Enable();
+
+            FrostHook.OnLoad();
+            FrostHook.Start();
         }
 
         return true;

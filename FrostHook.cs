@@ -1,25 +1,31 @@
+using frosthook.Patches.BC2;
+
 namespace frosthook;
 
 public static class FrostHook
 {
-    private static readonly ThreadStart HookThread = new(Initialize);
+    private static readonly ThreadStart HookThreadInfo = new(OnHook);
 
-    // private static nint _threadId = 0;
+    private static nint _threadId = 0;
 
-    public static void Enable()
+    public static void OnLoad()
     {
-        // Kernel32.CreateThread(IntPtr.Zero, 0, HookThread, IntPtr.Zero, 0, out _threadId);
-        // Console.WriteLine($"threadId created = 0x{_threadId:X0}");
-        // Kernel32.CloseHandle(_threadId);
+        Console.WriteLine("frosthook -- blocking on load");
 
-        Initialize();
+        Win32ServerR11.OnLoad();
     }
 
-    private static void Initialize()
+    public static void Start()
     {
-        var version = Patches.BC2.Win32ServerR11.GetExecutableNetworkProtocol();
-        Patches.BC2.Win32ServerR11.OverrideNetworkProtocol();
-        Console.WriteLine($"Executable Version: {version}");
-        Console.WriteLine("frosthook finished");
+        Kernel32.CreateThread(IntPtr.Zero, 0, HookThreadInfo, IntPtr.Zero, 0, out _threadId);
+        Console.WriteLine($"threadId created = 0x{_threadId:X0}");
+    }
+
+    private static void OnHook()
+    {
+        Win32ServerR11.OnHook();
+
+        Console.WriteLine($"threadId closing = 0x{_threadId:X0}");
+        Kernel32.CloseHandle(_threadId);
     }
 }
