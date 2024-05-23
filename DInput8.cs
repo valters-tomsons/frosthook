@@ -3,6 +3,9 @@ using System.Runtime.InteropServices;
 
 namespace frosthook;
 
+/// <summary>
+/// dinput8.dll ABI compatibility
+/// </summary>
 public static partial class DInput8
 {
     [UnmanagedCallersOnly(EntryPoint = nameof(DirectInput8Create), CallConvs = [typeof(CallConvStdcall)])]
