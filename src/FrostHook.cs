@@ -11,7 +11,6 @@ public static class FrostHook
     public static void OnLoad()
     {
         Console.WriteLine("frosthook -- blocking on load");
-
         Win32ServerR11.OnLoad();
     }
 
