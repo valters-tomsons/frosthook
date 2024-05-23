@@ -11,15 +11,15 @@ public static class EntryPoint
     {
         if ((uint)FwdReason.DLL_PROCESS_ATTACH == ul_reason_for_call)
         {
-            Console.WriteLine($"frosthook attached, hModule = 0x{hModule:X0}");
-            UnprotectCurrentProcess();
+            Console.WriteLine($"frosthook attached, hModule = 0x{hModule:X0}, 0x{lpReserved:X0}");
+            UnprotectProcess();
             FrostHook.Enable();
         }
 
         return true;
     }
 
-    private static void UnprotectCurrentProcess()
+    private static void UnprotectProcess()
     {
         using var currentProcess = Process.GetCurrentProcess();
         using var module = currentProcess.MainModule;
@@ -32,6 +32,6 @@ public static class EntryPoint
 
         Console.WriteLine($"{module.ModuleName}, 0x{module.BaseAddress:X0}");
         var success = Kernel32.VirtualProtect(module.BaseAddress, (uint)module.ModuleMemorySize, MemoryProtection.PAGE_EXECUTE_READWRITE, out var oldProtection);
-        Console.WriteLine($"{nameof(UnprotectCurrentProcess)} = {success}, {oldProtection}");
+        Console.WriteLine($"{nameof(UnprotectProcess)} = {success}, {oldProtection}");
     }
 }
