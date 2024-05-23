@@ -26,4 +26,18 @@ public static partial class Kernel32
     [LibraryImport(LibraryName, SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool VirtualProtect(IntPtr lpAddress, uint dwSize, MemoryProtection flNewProtect, out uint lpflOldProtect);
+
+
+    [LibraryImport(LibraryName, SetLastError = true)]
+    public static partial IntPtr CreateThread(
+        IntPtr lpThreadAttributes,
+        uint dwStackSize,
+        ThreadStart lpStartAddress,
+        IntPtr lpParameter,
+        uint dwCreationFlags,
+        out uint lpThreadId);
+
+    [LibraryImport(LibraryName, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool CloseHandle(IntPtr hObject);
 }
