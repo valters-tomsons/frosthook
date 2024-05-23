@@ -1,0 +1,27 @@
+name: win-x86
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.100-preview.4.24267.66
+      - name: Build frosthook
+        run: dotnet publish --no-restore -c Release -r win-x86 -o ./frosthook-win-x86
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frosthook-win-x86
+          path: "./frosthook-win-x86"
