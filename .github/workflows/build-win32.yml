@@ -18,8 +18,10 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 9.0.100-preview.4.24267.66
+      - name: Restore
+        run: dotnet restore
       - name: Build frosthook
-        run: dotnet publish --no-restore -c Release -r win-x86 -o ./frosthook-win-x86
+        run: dotnet publish -c Release -r win-x86 -o ./frosthook-win-x86
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
