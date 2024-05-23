@@ -7,6 +7,7 @@ namespace frosthook;
 public static class EntryPoint
 {
     private static readonly ThreadStart HookThread = new(FrostHook.Initialize);
+    private static uint _hookThreadId = 0;
 
     [UnmanagedCallersOnly(EntryPoint = nameof(DllMain), CallConvs = [typeof(CallConvStdcall)])]
     public static bool DllMain(IntPtr hModule, uint ul_reason_for_call, IntPtr lpReserved)
@@ -16,9 +17,8 @@ public static class EntryPoint
             Console.WriteLine($"frosthook attaching, hModule = 0x{hModule:X0}");
 
             UnprotectCurrentProcess();
-            Kernel32.CreateThread(IntPtr.Zero, 0, HookThread, IntPtr.Zero, 0, out var threadId);
-
-            Console.WriteLine($"threadId created = 0x{threadId:X0}");
+            Kernel32.CreateThread(IntPtr.Zero, 0, HookThread, IntPtr.Zero, 0, out _hookThreadId);
+            Console.WriteLine($"threadId created = 0x{_hookThreadId:X0}");
         }
 
         return true;
@@ -32,7 +32,7 @@ public static class EntryPoint
         if (module == null)
         {
             Console.WriteLine("Failed to get main module, goodbye!");
-            throw new NotImplementedException();
+            throw new Exception();
         }
 
         Console.WriteLine($"MainModule = {module.ModuleName}, 0x{module.BaseAddress:X0}");
