@@ -1,30 +1,26 @@
-using frosthook.Patches.BC2;
-
 namespace frosthook;
 
 public static class FrostHook
 {
-    private static readonly ThreadStart HookThreadInfo = new(OnHook);
+    static nint PayloadThreadId = 0;
+    static readonly ThreadStart PayloadStart = new(RunPayload);
 
-    private static nint _threadId = 0;
-
-    public static void OnLoad()
+    public static void OnAttach()
     {
-        Console.WriteLine("frosthook -- blocking on load");
-        Win32ServerR11.OnLoad();
+        // ! Loader Lock is active here, be warned!
+        Console.WriteLine("frosthook: OnAttach()");
+
+        Patches.BC2.Win32ServerR11.PatchBinary();
+
+        Kernel32.CreateThread(IntPtr.Zero, 0, PayloadStart, IntPtr.Zero, 0, out PayloadThreadId);
+        Console.WriteLine($"threadId created = 0x{PayloadThreadId:X0}");
     }
 
-    public static void Start()
+    static void RunPayload()
     {
-        Kernel32.CreateThread(IntPtr.Zero, 0, HookThreadInfo, IntPtr.Zero, 0, out _threadId);
-        Console.WriteLine($"threadId created = 0x{_threadId:X0}");
-    }
+        Patches.BC2.Win32ServerR11.DoRuntimeStuff();
 
-    private static void OnHook()
-    {
-        Win32ServerR11.OnHook();
-
-        Console.WriteLine($"threadId closing = 0x{_threadId:X0}");
-        Kernel32.CloseHandle(_threadId);
+        Console.WriteLine($"threadId closing = 0x{PayloadThreadId:X0}");
+        Kernel32.CloseHandle(PayloadThreadId);
     }
 }

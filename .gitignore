@@ -2,5 +2,6 @@ bin
 obj
 
 frosthook-win-x86
+frosthook-win-x64
 
 .vscode

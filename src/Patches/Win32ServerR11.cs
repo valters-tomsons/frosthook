@@ -8,10 +8,10 @@ namespace frosthook.Patches.BC2;
 
 public class Win32ServerR11
 {
-    private static readonly IntPtr NetworkProtocolServerR11 = new(0x1753911);
-    private static readonly byte[] NetworkProtocolOverride = Encoding.ASCII.GetBytes("RETAIL133337");
+    static readonly IntPtr NetworkProtocolServerR11 = new(0x1753911);
+    static readonly byte[] NetworkProtocolOverride = Encoding.ASCII.GetBytes("RETAIL133337");
 
-    public static void OnLoad()
+    public static void PatchBinary()
     {
         var version = GetNetworkProtocolVersion();
         Console.WriteLine($"Executable Version: {version}");
@@ -20,18 +20,18 @@ public class Win32ServerR11
         Console.WriteLine("frosthook finished");
     }
 
-    public static void OnHook()
+    public static void DoRuntimeStuff()
     {
         var version = GetNetworkProtocolVersion();
         Console.WriteLine($"Runtime Version: {version}");
     }
 
-    private static string GetNetworkProtocolVersion()
+    static string GetNetworkProtocolVersion()
     {
         return Marshal.PtrToStringAnsi(NetworkProtocolServerR11)?.TrimEnd('"') ?? throw new Exception("Failed to read version, goodbye!");
     }
 
-    private unsafe static void OverrideNetworkProtocol()
+    unsafe static void OverrideNetworkProtocol()
     {
         byte* ptr = (byte*)NetworkProtocolServerR11.ToPointer();
         for (int i = 0; i < NetworkProtocolOverride.Length; i++)

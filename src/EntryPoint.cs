@@ -14,14 +14,13 @@ public static class EntryPoint
             Console.WriteLine($"frosthook attached, hModule = 0x{hModule:X0}, 0x{lpReserved:X0}");
             UnprotectProcess();
 
-            FrostHook.OnLoad();
-            FrostHook.Start();
+            FrostHook.OnAttach();
         }
 
         return true;
     }
 
-    private static void UnprotectProcess()
+    static void UnprotectProcess()
     {
         using var currentProcess = Process.GetCurrentProcess();
         using var module = currentProcess.MainModule;
