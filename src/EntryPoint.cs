@@ -16,7 +16,7 @@ public static class EntryPoint
             using (var currentProcess = Process.GetCurrentProcess())
             {
                 using var module = currentProcess.MainModule!;
-                Console.WriteLine($"attaching to: {module.ModuleName}, 0x{module.BaseAddress:X0}");
+                Console.WriteLine($"frosthook attaching to: {module.ModuleName}, 0x{module.BaseAddress:X0}");
             }
 
             FrostHook.OnAttach();

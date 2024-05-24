@@ -20,7 +20,6 @@ public static class Win32ServerR11
         Console.WriteLine($"Executable Version: {version}");
 
         OverrideNetworkProtocol();
-        Console.WriteLine("frosthook finished");
     }
 
     public static void DoRuntimeStuff()
