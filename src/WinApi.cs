@@ -21,7 +21,7 @@ public enum MemoryProtection : uint
 
 public static partial class Kernel32
 {
-    private const string LibraryName = "kernel32.dll";
+    const string LibraryName = "kernel32.dll";
 
     [LibraryImport(LibraryName, SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -39,4 +39,10 @@ public static partial class Kernel32
     [LibraryImport(LibraryName, SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool CloseHandle(IntPtr hObject);
+
+    [LibraryImport(LibraryName, SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+    public static partial IntPtr GetModuleHandle(string lpModuleName);
+
+    [LibraryImport(LibraryName, SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+    public static partial IntPtr GetProcAddress(IntPtr hModule, string lpProcName);
 }
