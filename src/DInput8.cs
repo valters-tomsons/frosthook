@@ -3,6 +3,8 @@ using System.Runtime.InteropServices;
 
 namespace frosthook;
 
+#pragma warning disable IDE0060
+
 /// <summary>
 /// dinput8.dll ABI compatibility
 /// </summary>
