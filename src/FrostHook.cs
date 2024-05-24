@@ -10,7 +10,7 @@ public static class FrostHook
         // ! Loader Lock is active here, be warned!
         Console.WriteLine("frosthook: OnAttach()");
 
-        Patches.BC2.Win32ServerR11.PatchBinary();
+        Patches.BC2.Win32ServerR11.Initialize();
 
         Kernel32.CreateThread(IntPtr.Zero, 0, PayloadStart, IntPtr.Zero, 0, out PayloadThreadId);
         Console.WriteLine($"threadId created = 0x{PayloadThreadId:X0}");

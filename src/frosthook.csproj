@@ -12,4 +12,8 @@
     <AssemblyName>dinput8</AssemblyName>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Reloaded.Memory" Version="9.4.1" />
+  </ItemGroup>
+
 </Project>

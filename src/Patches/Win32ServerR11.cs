@@ -3,15 +3,18 @@
 
 using System.Runtime.InteropServices;
 using System.Text;
+using Reloaded.Memory;
+using Reloaded.Memory.Interfaces;
 
 namespace frosthook.Patches.BC2;
 
-public class Win32ServerR11
+public static class Win32ServerR11
 {
-    static readonly IntPtr NetworkProtocolServerR11 = new(0x1753911);
-    static readonly byte[] NetworkProtocolOverride = Encoding.ASCII.GetBytes("RETAIL133337");
+    const int NetworkProtocolStringLength = 12;
+    static readonly IntPtr NetworkProtocolOffset = new(0x1753911);
+    static readonly byte[] ProtocolOverride = Encoding.ASCII.GetBytes("RETAIL133337");
 
-    public static void PatchBinary()
+    public static unsafe void Initialize()
     {
         var version = GetNetworkProtocolVersion();
         Console.WriteLine($"Executable Version: {version}");
@@ -28,15 +31,15 @@ public class Win32ServerR11
 
     static string GetNetworkProtocolVersion()
     {
-        return Marshal.PtrToStringAnsi(NetworkProtocolServerR11)?.TrimEnd('"') ?? throw new Exception("Failed to read version, goodbye!");
+        return Marshal.PtrToStringAnsi(NetworkProtocolOffset, NetworkProtocolStringLength) ?? throw new Exception("Failed to read version, goodbye!");
     }
 
     unsafe static void OverrideNetworkProtocol()
     {
-        byte* ptr = (byte*)NetworkProtocolServerR11.ToPointer();
-        for (int i = 0; i < NetworkProtocolOverride.Length; i++)
-        {
-            ptr[i] = NetworkProtocolOverride[i];
-        }
+        var offset = (nuint)NetworkProtocolOffset;
+        var memory = Memory.Instance;
+
+        using var stringProtect = memory.ChangeProtectionDisposable(offset, NetworkProtocolStringLength, Reloaded.Memory.Enums.MemoryProtection.Write);
+        memory.WriteRaw(offset, ProtocolOverride);
     }
 }
