@@ -35,7 +35,6 @@ public static class FrostHook
         Console.WriteLine($"frosthook suspending main thread = 0x{MainThreadHandle:X0}");
 
         Patches.BC2.Win32ServerR11.Initialize();
-        Patches.BC2.Win32ServerR11.DoRuntimeStuff();
 
         Console.WriteLine($"frosthook resuming main thread = 0x{MainThreadHandle:X0}");
         Kernel32.SetThreadPriority(MainThreadHandle, ThreadPriority.THREAD_PRIORITY_NORMAL);

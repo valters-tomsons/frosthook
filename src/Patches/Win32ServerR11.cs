@@ -18,8 +18,8 @@ public static class Win32ServerR11
     static readonly IntPtr NetworkProtocolOffset = new(0x1753911);
     static readonly byte[] NetworkProtocolPatch = Encoding.ASCII.GetBytes("RETAIL133337");
 
-    static readonly IntPtr MakeConndIdOffset = new(0x012c1300);
-    static IHook<MakeConnId>? MakeConnIdHook;
+    static readonly IntPtr ConnMadeOffset = new(0x012f4460);
+    static IHook<ConnMade>? ConnMadeHook;
 
     static IHook<CreateFileA>? CreateFileAHook;
 
@@ -30,25 +30,21 @@ public static class Win32ServerR11
     {
         var version = GetNetworkProtocolVersion();
         Console.WriteLine($"Executable Version: {version}");
+        OverrideNetworkProtocol();
+
+        version = GetNetworkProtocolVersion();
+        Console.WriteLine($"Runtime Version: {version}");
 
         var kernel32Handle = Kernel32.GetModuleHandleW(Kernel32.LibraryName); 
         var fileCreatePointer = Kernel32.GetProcAddress(kernel32Handle, "CreateFileA");
         Console.WriteLine($"frosthook Kernel32 : 0x{kernel32Handle:X0}");
         Console.WriteLine($"frosthook Kernel32.CreateFileA : 0x{fileCreatePointer:X0}");
 
-        OverrideNetworkProtocol();
-
         Console.WriteLine($"frosthook hooking {nameof(CreateFileA)}");
         CreateFileAHook = new Hook<CreateFileA>(CreateFileAImpl, (nuint)fileCreatePointer).Activate();
 
-        Console.WriteLine($"frosthook hooking {nameof(MakeConnId)}");
-        MakeConnIdHook = new Hook<MakeConnId>(MakeConnIdImpl, (nuint)MakeConndIdOffset).Activate();
-    }
-
-    public static void DoRuntimeStuff()
-    {
-        var version = GetNetworkProtocolVersion();
-        Console.WriteLine($"Runtime Version: {version}");
+        Console.WriteLine($"frosthook hooking {nameof(ConnMade)}");
+        ConnMadeHook = new Hook<ConnMade>(ConnMadeImpl, (nuint)ConnMadeOffset).Activate();
     }
 
     static string GetNetworkProtocolVersion()
@@ -83,11 +79,11 @@ public static class Win32ServerR11
     }
 
     [Function(CallingConventions.MicrosoftThiscall)]
-    delegate void MakeConnId(IntPtr @this, int rf, IntPtr buf, uint bufSize);
+    delegate void ConnMade(IntPtr @this);
 
-    static void MakeConnIdImpl(IntPtr @this, int refValue, IntPtr buf, uint bufSize)
+    static void ConnMadeImpl(IntPtr @this)
     {
-        Console.WriteLine($"Intercepted: {nameof(MakeConnId)}, bufSize:{bufSize}");
-        MakeConnIdHook!.OriginalFunction(@this, refValue, buf, bufSize);
+        Console.WriteLine($"Backend connection open!");
+        ConnMadeHook!.OriginalFunction(@this);
     }
 }
