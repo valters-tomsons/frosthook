@@ -18,6 +18,9 @@ public static class Win32ServerR11
     static readonly IntPtr NetworkProtocolOffset = new(0x1753911);
     static readonly byte[] NetworkProtocolPatch = Encoding.ASCII.GetBytes("RETAIL133337");
 
+    static readonly IntPtr MakeConndIdOffset = new(0x012c1300);
+    static IHook<MakeConnId>? MakeConnIdHook;
+
     static IHook<CreateFileA>? CreateFileAHook;
 
     // Ignore Trimmer warnings for now, they're coming from the hooking library, but seem to work fine at runtime.
@@ -34,7 +37,12 @@ public static class Win32ServerR11
         Console.WriteLine($"frosthook Kernel32.CreateFileA : 0x{fileCreatePointer:X0}");
 
         OverrideNetworkProtocol();
+
+        Console.WriteLine($"frosthook hooking {nameof(CreateFileA)}");
         CreateFileAHook = new Hook<CreateFileA>(CreateFileAImpl, (nuint)fileCreatePointer).Activate();
+
+        Console.WriteLine($"frosthook hooking {nameof(MakeConnId)}");
+        MakeConnIdHook = new Hook<MakeConnId>(MakeConnIdImpl, (nuint)MakeConndIdOffset).Activate();
     }
 
     public static void DoRuntimeStuff()
@@ -72,5 +80,14 @@ public static class Win32ServerR11
     {
         Console.WriteLine($"[CFA] Opening File {filename}");
         return CreateFileAHook!.OriginalFunction(filename, access, share, securityAttributes, creationDisposition, flagsAndAttributes, templateFile);
+    }
+
+    [Function(CallingConventions.MicrosoftThiscall)]
+    delegate void MakeConnId(IntPtr @this, int rf, IntPtr buf, uint bufSize);
+
+    static void MakeConnIdImpl(IntPtr @this, int refValue, IntPtr buf, uint bufSize)
+    {
+        Console.WriteLine($"Intercepted: {nameof(MakeConnId)}, bufSize:{bufSize}");
+        MakeConnIdHook!.OriginalFunction(@this, refValue, buf, bufSize);
     }
 }

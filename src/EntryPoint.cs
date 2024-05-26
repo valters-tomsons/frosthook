@@ -10,8 +10,6 @@ public static class EntryPoint
     {
         if (FwdReason.DLL_PROCESS_ATTACH == ul_reason_for_call)
         {
-            Console.WriteLine($"frosthook loading, hModule = 0x{hModule:X0}");
-
             Kernel32.DisableThreadLibraryCalls(hModule);
             FrostHook.OnAttach(hModule);
         }
