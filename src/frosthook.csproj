@@ -13,8 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Iced" Version="1.21.0" />
-    <PackageReference Include="Reloaded.Memory" Version="9.4.1" />
+    <TrimmerRootAssembly Include="frosthook" />
     <PackageReference Include="Reloaded.Hooks" Version="4.3.2" />
   </ItemGroup>
 
