@@ -41,7 +41,7 @@ public static class Win32ServerR11
 
         CreateFileAHook = new Hook<CreateFileA>(CreateFileAImpl, (nuint)fileCreatePointer).Activate();
 
-        // OverrideNetworkProtocol();
+        OverrideNetworkProtocol();
     }
 
     public static void DoRuntimeStuff()
