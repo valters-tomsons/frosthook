@@ -25,6 +25,10 @@ public static partial class Kernel32
 
     [LibraryImport(LibraryName, SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool DisableThreadLibraryCalls(IntPtr hLibModule);
+
+    [LibraryImport(LibraryName, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool VirtualProtect(IntPtr lpAddress, uint dwSize, MemoryProtection flNewProtect, out uint lpflOldProtect);
 
     [LibraryImport(LibraryName, SetLastError = true)]

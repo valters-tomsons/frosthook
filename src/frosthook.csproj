@@ -13,6 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <TrimmerRootAssembly Include="$(AssemblyName)" />
     <PackageReference Include="Reloaded.Hooks" Version="4.3.2" />
     <PackageReference Include="Reloaded.Memory" Version="7.0.0" />
   </ItemGroup>
