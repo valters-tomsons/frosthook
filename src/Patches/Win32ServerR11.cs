@@ -6,8 +6,6 @@ using System.Text;
 using Reloaded.Hooks;
 using Reloaded.Hooks.Definitions;
 using Reloaded.Hooks.Definitions.X86;
-using Reloaded.Memory;
-using Reloaded.Memory.Interfaces;
 
 namespace frosthook.Patches.BC2;
 
@@ -19,9 +17,6 @@ public static class Win32ServerR11
     static readonly byte[] NetworkProtocolPatch = Encoding.ASCII.GetBytes("RETAIL133337");
 
     static IHook<CreateFileA> CreateFileAHook;
-
-    // static CreateFileA Kernel32_CreateFileA;
-    // [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
     [Function(CallingConventions.Stdcall)]
     delegate IntPtr CreateFileA(
             [MarshalAs(UnmanagedType.LPStr)] string filename,
@@ -43,11 +38,10 @@ public static class Win32ServerR11
         var fileCreatePointer = Kernel32.GetProcAddress(kernel32Handle, "CreateFileA");
         Console.WriteLine($"frosthook Kernel32.CreateFileA : 0x{fileCreatePointer:X0}");
 
-        // Kernel32_CreateFileA = Marshal.GetDelegateForFunctionPointer<CreateFileA>(fileCreatePointer);
         CreateFileAHook = new Hook<CreateFileA>(CreateFileAImpl, (nuint)fileCreatePointer).Activate();
 
         // GenerateHook(fileCreatePointer);
-        OverrideNetworkProtocol();
+        // OverrideNetworkProtocol();
     }
 
     public static void DoRuntimeStuff()
@@ -56,44 +50,23 @@ public static class Win32ServerR11
         Console.WriteLine($"Runtime Version: {version}");
     }
 
-    // private static void GenerateHook(IntPtr procAddress)
-    // {
-    //     var hookAddress = Marshal.GetFunctionPointerForDelegate(new CreateFileA(CreateFileAImpl));
-    //     Console.WriteLine($"hookAddress: 0x{hookAddress:X0}");
-
-    //     var assembler = new Assembler(32);
-    //     assembler.jmp((ulong)hookAddress.ToInt32());
-
-    //     using var asmStream = new MemoryStream();
-    //     var asmResult = assembler.Assemble(new StreamCodeWriter(asmStream), (ulong)procAddress.ToInt32());
-
-    //     Console.WriteLine("ASM generated!");
-
-    //     // Overwrite the original function pointer with the hook bytes
-    //     using var stringProtect = Memory.Instance.ChangeProtectionDisposable((nuint)procAddress, NetworkProtocolLength, Reloaded.Memory.Enums.MemoryProtection.Write);
-    //     Memory.Instance.WriteRaw((nuint)procAddress, NetworkProtocolPatch);
-
-    //     Console.WriteLine("Hook patched!");
-    // }
-
     static string GetNetworkProtocolVersion()
     {
         return Marshal.PtrToStringAnsi(NetworkProtocolOffset, NetworkProtocolLength) ?? throw new Exception("Failed to read version, goodbye!");
     }
 
-    unsafe static void OverrideNetworkProtocol()
-    {
-        var offset = (nuint)NetworkProtocolOffset;
-        var memory = Memory.Instance;
+    // unsafe static void OverrideNetworkProtocol()
+    // {
+    //     var offset = (nuint)NetworkProtocolOffset;
+    //     var memory = Memory.Instance;
 
-        using var stringProtect = memory.ChangeProtectionDisposable(offset, NetworkProtocolLength, Reloaded.Memory.Enums.MemoryProtection.Write);
-        memory.WriteRaw(offset, NetworkProtocolPatch);
-    }
+    //     using var stringProtect = memory.ChangeProtectionDisposable(offset, NetworkProtocolLength, Reloaded.Memory.Enums.MemoryProtection.Write);
+    //     memory.WriteRaw(offset, NetworkProtocolPatch);
+    // }
 
     private static IntPtr CreateFileAImpl(string filename, FileAccess access, FileShare share, IntPtr securityAttributes, FileMode creationDisposition, FileAttributes flagsAndAttributes, IntPtr templateFile)
     {
         Console.WriteLine($"[CFA] Opening File {filename}");
-        // return Kernel32_CreateFileA(filename, access, share, securityAttributes, creationDisposition, flagsAndAttributes, templateFile);
         return CreateFileAHook.OriginalFunction(filename, access, share, securityAttributes, creationDisposition, flagsAndAttributes, templateFile);
     }
 }
