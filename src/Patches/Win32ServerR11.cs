@@ -6,6 +6,7 @@ using System.Text;
 using Reloaded.Hooks;
 using Reloaded.Hooks.Definitions;
 using Reloaded.Hooks.Definitions.X86;
+using Reloaded.Memory.Sources;
 
 namespace frosthook.Patches.BC2;
 
@@ -16,7 +17,7 @@ public static class Win32ServerR11
     static readonly IntPtr NetworkProtocolOffset = new(0x1753911);
     static readonly byte[] NetworkProtocolPatch = Encoding.ASCII.GetBytes("RETAIL133337");
 
-    static IHook<CreateFileA> CreateFileAHook;
+    static IHook<CreateFileA>? CreateFileAHook;
     [Function(CallingConventions.Stdcall)]
     delegate IntPtr CreateFileA(
             [MarshalAs(UnmanagedType.LPStr)] string filename,
@@ -40,7 +41,6 @@ public static class Win32ServerR11
 
         CreateFileAHook = new Hook<CreateFileA>(CreateFileAImpl, (nuint)fileCreatePointer).Activate();
 
-        // GenerateHook(fileCreatePointer);
         // OverrideNetworkProtocol();
     }
 
@@ -55,18 +55,19 @@ public static class Win32ServerR11
         return Marshal.PtrToStringAnsi(NetworkProtocolOffset, NetworkProtocolLength) ?? throw new Exception("Failed to read version, goodbye!");
     }
 
-    // unsafe static void OverrideNetworkProtocol()
-    // {
-    //     var offset = (nuint)NetworkProtocolOffset;
-    //     var memory = Memory.Instance;
+    unsafe static void OverrideNetworkProtocol()
+    {
+        var offset = (nuint)NetworkProtocolOffset;
+        var memory = Memory.Instance;
 
-    //     using var stringProtect = memory.ChangeProtectionDisposable(offset, NetworkProtocolLength, Reloaded.Memory.Enums.MemoryProtection.Write);
-    //     memory.WriteRaw(offset, NetworkProtocolPatch);
-    // }
+        var oldPerm = memory.ChangePermission(offset, NetworkProtocolLength, Reloaded.Memory.Kernel32.Kernel32.MEM_PROTECTION.PAGE_READWRITE);
+        memory.WriteRaw(offset, NetworkProtocolPatch);
+        memory.ChangePermission(offset, NetworkProtocolLength, oldPerm);
+    }
 
     private static IntPtr CreateFileAImpl(string filename, FileAccess access, FileShare share, IntPtr securityAttributes, FileMode creationDisposition, FileAttributes flagsAndAttributes, IntPtr templateFile)
     {
         Console.WriteLine($"[CFA] Opening File {filename}");
-        return CreateFileAHook.OriginalFunction(filename, access, share, securityAttributes, creationDisposition, flagsAndAttributes, templateFile);
+        return CreateFileAHook!.OriginalFunction(filename, access, share, securityAttributes, creationDisposition, flagsAndAttributes, templateFile);
     }
 }
