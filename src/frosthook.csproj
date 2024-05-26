@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -13,7 +13,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <TrimmerRootAssembly Include="frosthook" />
     <PackageReference Include="Reloaded.Hooks" Version="4.3.2" />
   </ItemGroup>
 
