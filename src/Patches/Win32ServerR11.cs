@@ -83,7 +83,7 @@ public static class Win32ServerR11
 
     static void ConnMadeImpl(IntPtr @this)
     {
-        Console.WriteLine($"Backend connection open!");
+        Console.WriteLine($"Backend connection open, TransactorImpl: 0x{@this:X0}");
         ConnMadeHook!.OriginalFunction(@this);
     }
 }
