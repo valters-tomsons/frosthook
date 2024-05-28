@@ -22,7 +22,7 @@ public static class Win32ServerR11
     static IHook<ConnMade>? ConnMadeHook;
 
     static readonly IntPtr DispatchMessageOffset = new(0x0042eeb0);
-    static IHook<dispatchMessage>? DispatchMessageHook;
+    static IHook<DispatchMessage>? DispatchMessageHook;
 
     static IHook<CreateFileA>? CreateFileAHook;
 
