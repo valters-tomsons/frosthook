@@ -9,3 +9,4 @@ Add `WINEDLLOVERRIDES="dinput8=n,b"`
 ## Resources
 
 https://elliotonsecurity.com/perfect-dll-hijacking/
+https://reloaded-project.github.io/Reloaded.Hooks/
