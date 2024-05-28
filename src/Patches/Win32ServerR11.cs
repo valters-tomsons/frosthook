@@ -32,24 +32,24 @@ public static class Win32ServerR11
     public static unsafe void Initialize()
     {
         var version = GetNetworkProtocolVersion();
-        Console.WriteLine($"Executable Version: {version}");
+        FrostHook.LogLine($"Executable Version: {version}");
         OverrideNetworkProtocol();
 
         version = GetNetworkProtocolVersion();
-        Console.WriteLine($"Runtime Version: {version}");
+        FrostHook.LogLine($"Runtime Version: {version}");
 
         var kernel32Handle = Kernel32.GetModuleHandleW(Kernel32.LibraryName); 
         var fileCreatePointer = Kernel32.GetProcAddress(kernel32Handle, "CreateFileA");
-        Console.WriteLine($"frosthook Kernel32 : 0x{kernel32Handle:X0}");
-        Console.WriteLine($"frosthook Kernel32.CreateFileA : 0x{fileCreatePointer:X0}");
+        FrostHook.LogLine($"Kernel32 : 0x{kernel32Handle:X0}");
+        FrostHook.LogLine($"Kernel32.CreateFileA : 0x{fileCreatePointer:X0}");
 
-        Console.WriteLine($"frosthook hooking {nameof(CreateFileA)}");
+        FrostHook.LogLine($"hooking {nameof(CreateFileA)}");
         CreateFileAHook = new Hook<CreateFileA>(CreateFileAImpl, (nuint)fileCreatePointer).Activate();
 
-        Console.WriteLine($"frosthook hooking {nameof(ConnMade)}");
+        FrostHook.LogLine($"hooking {nameof(ConnMade)}");
         ConnMadeHook = new Hook<ConnMade>(ConnMadeImpl, (nuint)ConnMadeOffset).Activate();
 
-        Console.WriteLine($"frosthook hooking {nameof(DispatchMessage)}");
+        FrostHook.LogLine($"hooking {nameof(DispatchMessage)}");
         DispatchMessageHook = new Hook<DispatchMessage>(DispatchMessageImpl, (nuint)DispatchMessageOffset).Activate();
     }
 
@@ -80,7 +80,7 @@ public static class Win32ServerR11
 
     static IntPtr CreateFileAImpl(string filename, FileAccess access, FileShare share, IntPtr securityAttributes, FileMode creationDisposition, FileAttributes flagsAndAttributes, IntPtr templateFile)
     {
-        Console.WriteLine($"[CFA] Opening File {filename}");
+        FrostHook.LogLine($"[CFA] Opening File {filename}");
         return CreateFileAHook!.OriginalFunction(filename, access, share, securityAttributes, creationDisposition, flagsAndAttributes, templateFile);
     }
 
@@ -90,7 +90,7 @@ public static class Win32ServerR11
 
     static void ConnMadeImpl(IntPtr @this)
     {
-        Console.WriteLine($"Backend connection open, TransactorImpl: 0x{@this:X0}");
+        FrostHook.LogLine($"Backend connection open, TransactorImpl: 0x{@this:X0}");
         ConnMadeHook!.OriginalFunction(@this);
     }
 
@@ -100,7 +100,7 @@ public static class Win32ServerR11
 
     static void DispatchMessageImpl(IntPtr @this, IntPtr message)
     {
-        Console.WriteLine($"msg dispatch, MessageManager: 0x{@this:X0}, Message: 0x{message:X0}");
+        FrostHook.LogLine($"msg dispatch, MessageManager: 0x{@this:X0}, Message: 0x{message:X0}");
         DispatchMessageHook.OriginalFunction(@this, message);
     }
 }
