@@ -21,6 +21,9 @@ public static class Win32ServerR11
     static readonly IntPtr ConnMadeOffset = new(0x012f4460);
     static IHook<ConnMade>? ConnMadeHook;
 
+    static readonly IntPtr DispatchMessageOffset = new(0x0042eeb0);
+    static IHook<dispatchMessage>? DispatchMessageHook;
+
     static IHook<CreateFileA>? CreateFileAHook;
 
     // Ignore Trimmer warnings for now, they're coming from the hooking library, but seem to work fine at runtime.
@@ -45,6 +48,9 @@ public static class Win32ServerR11
 
         Console.WriteLine($"frosthook hooking {nameof(ConnMade)}");
         ConnMadeHook = new Hook<ConnMade>(ConnMadeImpl, (nuint)ConnMadeOffset).Activate();
+
+        Console.WriteLine($"frosthook hooking {nameof(DispatchMessage)}");
+        DispatchMessageHook = new Hook<DispatchMessage>(DispatchMessageImpl, (nuint)DispatchMessageOffset).Activate();
     }
 
     static string GetNetworkProtocolVersion()
@@ -78,6 +84,7 @@ public static class Win32ServerR11
         return CreateFileAHook!.OriginalFunction(filename, access, share, securityAttributes, creationDisposition, flagsAndAttributes, templateFile);
     }
 
+    //Fesl::TransactorImpl (base)
     [Function(CallingConventions.MicrosoftThiscall)]
     delegate void ConnMade(IntPtr @this);
 
@@ -85,5 +92,15 @@ public static class Win32ServerR11
     {
         Console.WriteLine($"Backend connection open, TransactorImpl: 0x{@this:X0}");
         ConnMadeHook!.OriginalFunction(@this);
+    }
+
+    //dice::MessageManager
+    [Function(CallingConventions.MicrosoftThiscall)]
+    delegate void DispatchMessage(IntPtr @this, IntPtr message);
+
+    static void DispatchMessageImpl(IntPtr @this, IntPtr message)
+    {
+        Console.WriteLine($"msg dispatch, MessageManager: 0x{@this:X0}, Message: 0x{message:X0}");
+        DispatchMessageHook.OriginalFunction(@this, message);
     }
 }
