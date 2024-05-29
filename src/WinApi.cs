@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using Reloaded.Hooks.Definitions.X86;
 
 namespace frosthook;
 
@@ -73,3 +74,13 @@ public static partial class Kernel32
     [LibraryImport(LibraryName, SetLastError = true)]
     public static partial IntPtr OpenThread(ThreadRights dwDesiredAccess, [MarshalAs(UnmanagedType.Bool)] bool bInheritHandle, uint dwThreadId);
 }
+
+[Function(CallingConventions.Stdcall)]
+delegate IntPtr CreateFileA(
+        [MarshalAs(UnmanagedType.LPStr)] string filename,
+        [MarshalAs(UnmanagedType.U4)] FileAccess access,
+        [MarshalAs(UnmanagedType.U4)] FileShare share,
+        IntPtr securityAttributes,
+        [MarshalAs(UnmanagedType.U4)] FileMode creationDisposition,
+        [MarshalAs(UnmanagedType.U4)] FileAttributes flagsAndAttributes,
+        IntPtr templateFile);
