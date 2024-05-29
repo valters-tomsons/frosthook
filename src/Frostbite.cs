@@ -21,6 +21,14 @@ public delegate void AllowPlayerEntryInternal(
     [MarshalAs(UnmanagedType.U1)] bool allow,
     [MarshalAs(UnmanagedType.I4)] int reason);
 
+[Function(CallingConventions.MicrosoftThiscall)]
+public delegate void HandleEnterGameHostRequest(
+    IntPtr @this,
+    IntPtr txnPtr);
+
+[Function(CallingConventions.MicrosoftThiscall)]
+public delegate ClientDisconnectReason GetReason(IntPtr @this);
+
 public enum GamePlayerType : uint
 {
     GAME_PLAYER_TYPE_PARTICIPANT = 0x0,
@@ -28,7 +36,7 @@ public enum GamePlayerType : uint
     GAME_PLAYER_TYPE_COUNT = 0x2
 };
 
-public enum ClientDisconnectReason
+public enum ClientDisconnectReason : uint
 {
     Ok = 0x0,
     WrongProtocolVersion = 0x1,
@@ -56,8 +64,31 @@ public enum GameManagerPlayerState : uint
     GAMEMANAGER_PLAYER_STATE_JOINED = 0x6
 };
 
+public enum GameManagerJoinMode : uint
+{
+    GAMEMANAGER_JOIN_MODE_CLOSED = 0x0,
+    GAMEMANAGER_JOIN_MODE_OPEN = 0x1,
+    GAMEMANAGER_JOIN_MODE_WAIT = 0x2,
+    GAMEMANAGER_JOIN_MODE_AUTO = 0x3,
+    GAMEMANAGER_JOIN_MODE_CUSTOM = 0x4
+};
+
+public enum GameManagerGameState : uint
+{
+    GAMEMANAGER_GAME_STATE_NULL = 0x0,
+    GAMEMANAGER_GAME_STATE_WAITING_FOR_ENTRY_RESPONSE = 0x1,
+    GAMEMANAGER_GAME_STATE_WAITING_FOR_ALLOW = 0x2,
+    GAMEMANAGER_GAME_STATE_QUEUED = 0x3,
+    GAMEMANAGER_GAME_STATE_CONNECTING = 0x4,
+    GAMEMANAGER_GAME_STATE_ACTIVE = 0x5,
+    GAMEMANAGER_GAME_STATE_CREATING = 0x6,
+    GAMEMANAGER_GAME_STATE_MIGRATING_INIT = 0x7,
+    GAMEMANAGER_GAME_STATE_MIGRATING = 0x8,
+    GAMEMANAGER_GAME_STATE_MIGRATING_RECONNECT = 0x9
+};
+
 [StructLayout(LayoutKind.Sequential)]
-public struct GameManagerPlayerImpl
+public struct GameManagerPlayer
 {
     public IntPtr VTable;
     public IntPtr EncodableVTable;
@@ -77,4 +108,30 @@ public struct GameManagerPlayerImpl
     public bool VoipSendToEnabled;
     public bool VoipMuted;
     public bool VoidHwEnabled;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+public struct FeslTransaction
+{
+    public IntPtr mAddress; // Fesl::InternetAddress*
+    public IntPtr mBuffer; // char*
+    public uint mSize;
+    public uint mUsed;
+    public int mKind;
+    public int mCode;
+    public int mErrorCode;
+    public int mId;
+    public int mAllowedServiceState;
+    public bool mMode;
+    public IntPtr mHead; // Transaction::Buffer*
+    public IntPtr mTail; // Transaction::Buffer*
+    public uint mNumBuffers;
+    public bool mOwnBuffers;
+}
+
+[StructLayout(LayoutKind.Explicit)]
+public struct GameManagerHostedGame
+{
+    [FieldOffset(0xb0)]
+    public GameManagerJoinMode CurrentJoinMode;
 }
