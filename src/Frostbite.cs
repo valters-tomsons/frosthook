@@ -29,6 +29,9 @@ public delegate void HandleEnterGameHostRequest(
 [Function(CallingConventions.MicrosoftThiscall)]
 public delegate ClientDisconnectReason GetReason(IntPtr @this);
 
+[Function(CallingConventions.MicrosoftThiscall)]
+public delegate string GetGameProtocolVersion(IntPtr @this);
+
 public enum GamePlayerType : uint
 {
     GAME_PLAYER_TYPE_PARTICIPANT = 0x0,
