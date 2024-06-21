@@ -1,13 +1,13 @@
 // ff7c40f0271f387c52dc0a9190cac6ea549244f3  Frost.Game.Main_Win32_Final.exe
 // Bad Company 2 Server R11
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
 using frosthook.Frostbite;
 using Reloaded.Hooks;
 using Reloaded.Hooks.Definitions;
-using Reloaded.Hooks.Definitions.X86;
 using Reloaded.Memory.Sources;
 
 namespace frosthook.Patches.BC2;
@@ -16,61 +16,79 @@ public static class Win32ServerR11
 {
     // Network Protocol Patch
     const int NetworkProtocolLength = 12;
-    static readonly IntPtr NetworkProtocolOffset = new(0x1753911);
-    static readonly byte[] NetworkProtocolPatch = Encoding.ASCII.GetBytes("RETAIL133337");
+    static readonly IntPtr NetworkVersionAddress = new(0x1753911);
+    static readonly IntPtr NetworkProtocolIdAddress = new(0x1753921);
 
-    static readonly IntPtr DispatchMessageOffset = new(0x0042eeb0);
+    const int BuildIdLength = 6;
+    static readonly IntPtr BuildIdAddress = new(0x1754b90);
+
+    static readonly IntPtr DispatchMessageAddress = new(0x0042eeb0);
     static IHook<DispatchMessage>? DispatchMessageHook;
 
     static readonly IntPtr GetPreemptiveDenyReasonAddress = new(0x012c1e00);
     static IHook<GetPreemptiveDenyReason>? GetPreemptiveDenyReasonHook;
 
-    static IntPtr AllowPlayerEntryInternalAddress = new IntPtr(0x012E88C0);
+    static readonly IntPtr AllowPlayerEntryInternalAddress = new(0x012e88C0);
     static IHook<AllowPlayerEntryInternal>? AllowPlayerEntryInternalHook;
 
+    static readonly IntPtr HandleEnterGameHostRequestAddress = new(0x012e8fa0);
+    static IHook<HandleEnterGameHostRequest>? HandleEnterGameHostRequestHook;
 
-    static IHook<CreateFileA>? CreateFileAHook;
 
     // Ignore Trimmer warnings for now, they're coming from the hooking library, but seem to work fine at runtime.
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "<Pending>")]
     [UnconditionalSuppressMessage("Trimming", "IL2111", Justification = "<Pending>")]
-    public static unsafe void Initialize()
+    public static unsafe void Apply()
     {
-        var version = GetNetworkProtocolVersion();
-        FrostHook.LogLine($"Executable Version: {version}");
-        OverrideNetworkProtocol();
+        var netVersion = GetNetworkVersion();
+        var protocolId = GetNetworkProtocolId();
+        var buildId = GetBuildId();
+        FrostHook.LogLine($"Network.Version: {netVersion}");
+        FrostHook.LogLine($"networkProtocolId: {protocolId}");
+        FrostHook.LogLine($"buildId: {buildId}");
 
-        version = GetNetworkProtocolVersion();
-        FrostHook.LogLine($"Runtime Version: {version}");
-
-        var kernel32Handle = Kernel32.GetModuleHandleW(Kernel32.LibraryName); 
-        var fileCreatePointer = Kernel32.GetProcAddress(kernel32Handle, "CreateFileA");
-        CreateFileAHook = new Hook<CreateFileA>(CreateFileAImpl, (nuint)fileCreatePointer).Activate();
+        // OverrideNetworkProtocol();
+        OverwriteString(NetworkVersionAddress, NetworkProtocolLength, "RETAIL511118");
+        OverwriteString(NetworkProtocolIdAddress, NetworkProtocolLength, "RETAIL515757");
 
         // DispatchMessageHook = new Hook<DispatchMessage>(DispatchMessageImpl, (nuint)DispatchMessageOffset).Activate();
-        GetPreemptiveDenyReasonHook = new Hook<GetPreemptiveDenyReason>(GetPreemptiveDenyReasonImpl, (nuint)GetPreemptiveDenyReasonAddress).Activate();
-        AllowPlayerEntryInternalHook = new Hook<AllowPlayerEntryInternal>(AllowPlayerEntryInternalImpl, (nuint)AllowPlayerEntryInternalAddress).Activate();
+        // GetPreemptiveDenyReasonHook = new Hook<GetPreemptiveDenyReason>(GetPreemptiveDenyReasonImpl, (nuint)GetPreemptiveDenyReasonAddress).Activate();
+        // AllowPlayerEntryInternalHook = new Hook<AllowPlayerEntryInternal>(AllowPlayerEntryInternalImpl, (nuint)AllowPlayerEntryInternalAddress).Activate();
+        // GetReasonHook = new Hook<GetReason>(GetReasonImpl, (nuint)GetReasonAddress).Activate();
+        HandleEnterGameHostRequestHook = new Hook<HandleEnterGameHostRequest>(HandleEnterGameHostRequestImpl, (nuint)HandleEnterGameHostRequestAddress).Activate();
     }
 
-    static string GetNetworkProtocolVersion()
+    static string GetNetworkVersion()
     {
-        return Marshal.PtrToStringAnsi(NetworkProtocolOffset, NetworkProtocolLength) ?? throw new Exception("Failed to read version, goodbye!");
+        return Marshal.PtrToStringAnsi(NetworkVersionAddress, NetworkProtocolLength) ?? throw new Exception("Failed to read version, goodbye!");
     }
 
-    static unsafe void OverrideNetworkProtocol()
+    static string GetNetworkProtocolId()
     {
-        var offset = (nuint)NetworkProtocolOffset;
+        return Marshal.PtrToStringAnsi(NetworkVersionAddress, NetworkProtocolLength) ?? throw new Exception("Failed to read version, goodbye!");
+    }
+
+    static string GetBuildId()
+    {
+        return Marshal.PtrToStringAnsi(BuildIdAddress, BuildIdLength) ?? throw new Exception("Failed to read version, goodbye!");
+    }
+
+    static void OverwriteString(IntPtr address, int length, string value)
+    {
+        FrostHook.LogLine($"overwriting string at 0x{address:X0} -> {value}");
+
+        var addr = (nuint)address;
         var memory = Memory.Instance;
 
-        var oldPerm = memory.ChangePermission(offset, NetworkProtocolLength, Reloaded.Memory.Kernel32.Kernel32.MEM_PROTECTION.PAGE_READWRITE);
-        memory.WriteRaw(offset, NetworkProtocolPatch);
-        memory.ChangePermission(offset, NetworkProtocolLength, oldPerm);
-    }
+        var patch = Encoding.ASCII.GetBytes(value);
+        if (patch.Length != length)
+        {
+            FrostHook.LogLine("[WARNING] String patch length mismatch, here be dragons!");
+        }
 
-    static IntPtr CreateFileAImpl(string filename, FileAccess access, FileShare share, IntPtr securityAttributes, FileMode creationDisposition, FileAttributes flagsAndAttributes, IntPtr templateFile)
-    {
-        FrostHook.LogLine($"[CFA] Opening File {filename}");
-        return CreateFileAHook!.OriginalFunction(filename, access, share, securityAttributes, creationDisposition, flagsAndAttributes, templateFile);
+        var oldPerm = memory.ChangePermission(addr, length, Reloaded.Memory.Kernel32.Kernel32.MEM_PROTECTION.PAGE_READWRITE);
+        memory.WriteRaw(addr, patch);
+        memory.ChangePermission(addr, length, oldPerm);
     }
 
     static void DispatchMessageImpl(IntPtr @this, IntPtr message)
@@ -87,17 +105,30 @@ public static class Win32ServerR11
         bool alreadyJoining)
     {
         var denyReason = GetPreemptiveDenyReasonHook!.OriginalFunction(@this, playerType, playerName, playerRef, alreadyJoining);
-        FrostHook.LogLine($"GetPreemptiveDenyReason(): {playerType}, {playerName}, {playerRef}, {alreadyJoining}: {denyReason}");
+        FrostHook.LogLine($"GetPreemptiveDenyReason() player name={playerName}, type={playerType}, ptr=0x{playerRef:X0}, already={alreadyJoining}: denyReason={denyReason}");
         return denyReason;
     }
 
     static unsafe void AllowPlayerEntryInternalImpl(IntPtr @this, IntPtr playerPtr, bool allow, int reason)
     {
-        var player = (GameManagerPlayerImpl*)playerPtr;
+        var player = (GameManagerPlayer*)playerPtr;
 
-        FrostHook.LogLine($"AllowPlayerEntryInternal(): {allow}, {reason}");
-        FrostHook.LogLine($"Player: {player->PlayerType} {player->PlayerState}");
+        FrostHook.LogLine($"AllowPlayerEntryInternal() allow={allow}, reason={reason}");
+        FrostHook.LogLine($"Pre-Player type={player->PlayerType}, state={player->PlayerState}");
         AllowPlayerEntryInternalHook!.OriginalFunction(@this, playerPtr, allow, reason);
-        FrostHook.LogLine($"Player: {player->PlayerType} {player->PlayerState}");
+        FrostHook.LogLine($"Post-Player type={player->PlayerType}, state={player->PlayerState}");
+    }
+
+    static unsafe void HandleEnterGameHostRequestImpl(IntPtr @this, IntPtr txnPtr)
+    {
+        var txn = (FeslTransaction*)txnPtr;
+        FrostHook.LogLine($"Pre-HandleEnterGameHostRequest() allowedState={txn->mAllowedServiceState}, code={txn->mCode}, errCode={txn->mErrorCode}");
+
+        var st = new StackTrace();
+        FrostHook.LogLine("Stack trace:");
+        FrostHook.LogLine(st.ToString());
+
+        HandleEnterGameHostRequestHook!.OriginalFunction(@this, txnPtr);
+        FrostHook.LogLine($"Post-HandleEnterGameHostRequest() allowedState={txn->mAllowedServiceState}, code={txn->mCode}, errCode={txn->mErrorCode}");
     }
 }

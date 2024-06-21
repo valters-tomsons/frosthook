@@ -37,13 +37,13 @@ public static class FrostHook
     static void RunPayloadThread()
     {
         LogLine($"frosthook thread executing = 0x{ThreadHandle:X0}");
-        LogLine($"frosthook suspending main thread = 0x{MainThreadHandle:X0}");
+        LogLine($"frosthook suspended main thread = 0x{MainThreadHandle:X0}");
 
-        Patches.BC2.Win32ServerR11.Initialize();
+        Patches.BC2.Win32ServerR11.Apply();
 
         LogLine($"frosthook resuming main thread = 0x{MainThreadHandle:X0}");
         Kernel32.SetThreadPriority(MainThreadHandle, ThreadPriority.THREAD_PRIORITY_NORMAL);
-        
+
         LogLine($"frosthook thread closing = 0x{ThreadHandle:X0}");
         Kernel32.CloseHandle(ThreadHandle);
     }
