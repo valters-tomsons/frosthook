@@ -50,7 +50,7 @@ public static class Win32ServerR11
 
     static string GetNetworkProtocolId()
     {
-        return Marshal.PtrToStringAnsi(NetworkVersionAddress, NetworkProtocolLength) ?? throw new Exception("Failed to read version, goodbye!");
+        return Marshal.PtrToStringAnsi(NetworkProtocolIdAddress, NetworkProtocolLength) ?? throw new Exception("Failed to read version, goodbye!");
     }
 
     static string GetBuildId()
