@@ -32,6 +32,25 @@ public delegate ClientDisconnectReason GetReason(IntPtr @this);
 [Function(CallingConventions.MicrosoftThiscall)]
 public delegate string GetGameProtocolVersion(IntPtr @this);
 
+//Fesl::TitleParametersImpl::Init
+[Function(CallingConventions.MicrosoftThiscall)]
+public delegate void FeslTitleParametersInit
+(
+    IntPtr @this,
+    [MarshalAs(UnmanagedType.LPStr)] string sku,
+    [MarshalAs(UnmanagedType.LPStr)] string clientVersion,
+    [MarshalAs(UnmanagedType.LPStr)] string clientString,
+    [MarshalAs(UnmanagedType.I4)] int feslPort,
+    [MarshalAs(UnmanagedType.U4)] FeslEnvironment env
+);
+
+public enum FeslEnvironment : uint
+{
+    FESL_ENVIRONMENT_STEST = 0x0,
+    FESL_ENVIRONMENT_PROD = 0x1,
+    FESL_ENVIRONMENT_INTERNAL_SCERT = 0x2
+}
+
 public enum GamePlayerType : uint
 {
     GAME_PLAYER_TYPE_PARTICIPANT = 0x0,
