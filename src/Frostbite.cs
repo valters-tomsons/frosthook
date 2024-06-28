@@ -157,3 +157,46 @@ public struct GameManagerHostedGame
     [FieldOffset(0xb0)]
     public GameManagerJoinMode CurrentJoinMode;
 }
+
+[StructLayout(LayoutKind.Sequential)]
+public struct TitleInfoImpl
+{
+    public IntPtr TitleInfoVTable;
+    public IntPtr TitleInfoImplVTable;
+
+    public int mXb360TitleId;
+
+    [MarshalAs(UnmanagedType.U4)]
+    public FeslPlatformOverride mPlatformOverride;
+
+    [MarshalAs(UnmanagedType.LPStr, SizeConst = 0xa)]
+    public int mPS3ContentMinimumAge;
+
+    [MarshalAs(UnmanagedType.LPStr, SizeConst = 0x20)]
+    public string mSKU;
+
+    [MarshalAs(UnmanagedType.LPStr, SizeConst = 0x8)]
+    public string mPS3SPID;
+
+    [MarshalAs(UnmanagedType.LPStr, SizeConst = 0x20)]
+    public string mPCTitleId;
+
+    [MarshalAs(UnmanagedType.LPStr, SizeConst = 0x10)]
+    public string mPS3TitleId;
+
+    [MarshalAs(UnmanagedType.LPStr, SizeConst = 0x10)]
+    public string mClientVersion;
+
+    [MarshalAs(UnmanagedType.LPStr, SizeConst = 0xa)]
+    public string mPS3CommunicationId;
+
+    [MarshalAs(UnmanagedType.U1)]
+    public bool mXb360MultiplayerSessionsCheck;
+}
+
+public enum FeslPlatformOverride : uint
+{
+    FESL_PLATFORM_PC = 0x0,
+    FESL_PLATFORM_XB360 = 0x1,
+    FESL_PLATFORM_PS3 = 0x2
+};
