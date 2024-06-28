@@ -157,11 +157,15 @@ public struct GameManagerHostedGame
     public GameManagerJoinMode CurrentJoinMode;
 }
 
-[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+// [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
 public struct TitleInfoImpl
 {
-    public IntPtr TitleVTable;
-    public IntPtr TitleInfoImplVTable;
+    [MarshalAs(UnmanagedType.SysInt)]
+    public IntPtr baseVTable;
+
+    [MarshalAs(UnmanagedType.SysInt)]
+    public IntPtr vTable;
 
     [MarshalAs(UnmanagedType.U4)]
     public uint mXb360TitleId;
@@ -173,25 +177,25 @@ public struct TitleInfoImpl
     public int mPS3ContentMinimumAge;
 
     [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x20)]
-    public string mSKU;
+    public byte[] mSKU;
 
     [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x8)]
-    public string mPS3SPID;
+    public byte[] mPS3SPID;
 
-    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x20)]
-    public string mPCTitleId;
-
-    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x10)]
-    public string mPS3TitleId;
+    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 0x20)]
+    public byte[] mPCTitleId;
 
     [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x10)]
-    public string mClientVersion;
+    public byte[] mPS3TitleId;
+
+    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x10)]
+    public byte[] mClientVersion;
 
     [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0xa)]
-    public string mPS3CommunicationId;
+    public byte[] mPS3CommunicationId;
 
     [MarshalAs(UnmanagedType.U1)]
-    public bool mXb360MultiplayerSessionsCheck;
+    public byte mXb360MultiplayerSessionsCheck;
 }
 
 public enum FeslPlatformOverride : uint
