@@ -2,11 +2,9 @@
 // Bad Company 2 Server R11
 
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
 using frosthook.Frostbite;
 using Reloaded.Hooks;
 using Reloaded.Hooks.Definitions;
-using Reloaded.Memory;
 
 namespace frosthook.Patches.BC2;
 
@@ -24,7 +22,6 @@ public static class Win32ServerR11
         CreateFileAHook = new Hook<CreateFileA>(CreateFileAImpl, (nuint)fileCreatePointer).Activate();
 
         TitleInitHook = new Hook<FeslTitleParametersInit>(TitleInitImpl, 0x01315860).Activate();
-        // FrostHook.LogLine($"sizeof(TitleInitImpl):{sizeof(TitleInfoImpl)}");
     }
 
     static IntPtr CreateFileAImpl(string filename, FileAccess access, FileShare share, IntPtr securityAttributes, FileMode creationDisposition, FileAttributes flagsAndAttributes, IntPtr templateFile)
@@ -38,8 +35,7 @@ public static class Win32ServerR11
         FrostHook.LogLine($"Function hooked: Fesl::TitleParametersImpl::Init(sku:{sku}, c_ver:{clientVersion}, c_str:{clientString}, port:{feslPort}, env:{env})");
         TitleInitHook!.OriginalFunction(@this, sku, clientVersion, clientString, feslPort, env);
 
-        var infoAddress = @this + 0x08;
-        var mTitleInfo = Marshal.PtrToStructure<TitleInfoImpl>(infoAddress);
-        FrostHook.LogLine($"hooked mTitleInfo:{infoAddress}, ps3spid:{mTitleInfo.mPS3SPID}, c_ver:{mTitleInfo.mClientVersion}, plat:{mTitleInfo.mPlatformOverride}");
+        var info = (TitleInfoImpl*)(@this + 0x08);
+        FrostHook.LogLine($"hooked mTitleInfo:{(IntPtr)info}, ps3spid:{info->mPS3SPID}, c_ver:{info->mClientVersion}, plat:{info->mPlatformOverride}");
     }
 }

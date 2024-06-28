@@ -32,7 +32,6 @@ public delegate ClientDisconnectReason GetReason(IntPtr @this);
 [Function(CallingConventions.MicrosoftThiscall)]
 public delegate string GetGameProtocolVersion(IntPtr @this);
 
-//Fesl::TitleParametersImpl::Init
 [Function(CallingConventions.MicrosoftThiscall)]
 public delegate void FeslTitleParametersInit
 (
