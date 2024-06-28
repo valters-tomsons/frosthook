@@ -160,6 +160,7 @@ public struct GameManagerHostedGame
 [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
 public struct TitleInfoImpl
 {
+    public IntPtr TitleVTable;
     public IntPtr TitleInfoImplVTable;
 
     [MarshalAs(UnmanagedType.U4)]

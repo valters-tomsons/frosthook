@@ -36,6 +36,7 @@ public static class Win32ServerR11
         TitleInitHook!.OriginalFunction(@this, sku, clientVersion, clientString, feslPort, env);
 
         var info = (TitleInfoImpl*)(@this + 0x4);
-        FrostHook.LogLine($"hooked mTitleInfo:{(IntPtr)info:X0}, ps3spid:{info->mPS3SPID}, c_ver:{info->mClientVersion}, plat:{info->mPlatformOverride}");
+        FrostHook.LogLine($"hooked mTitleInfo:{(IntPtr)info:X0}");
+        FrostHook.LogLine($"ps3spid:{info->mPS3SPID}, c_ver:{info->mClientVersion}, plat:{info->mPlatformOverride}");
     }
 }
