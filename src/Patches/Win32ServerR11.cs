@@ -32,11 +32,10 @@ public static class Win32ServerR11
 
     static unsafe void TitleInitImpl(IntPtr @this, string sku, string clientVersion, string clientString, int feslPort, FeslEnvironment env)
     {
-        FrostHook.LogLine($"Function hooked: Fesl::TitleParametersImpl::Init(sku:{sku}, c_ver:{clientVersion}, c_str:{clientString}, port:{feslPort}, env:{env})");
+        FrostHook.LogLine($"Function hooked: Fesl::TitleParametersImpl::Init(this:0x{@this:X0}, sku:{sku}, c_ver:{clientVersion}, c_str:{clientString}, port:{feslPort}, env:{env})");
         TitleInitHook!.OriginalFunction(@this, sku, clientVersion, clientString, feslPort, env);
 
-        var info = (TitleInfoImpl*)(@this + 0x4);
-        FrostHook.LogLine($"hooked mTitleInfo:{(IntPtr)info:X0}");
-        FrostHook.LogLine($"ps3spid:{info->mPS3SPID}, c_ver:{info->mClientVersion}, plat:{info->mPlatformOverride}");
+        Reloaded.Memory.Struct.FromPtr<TitleInfoImpl>((nuint)@this + 4, out var mTitleInfo, true);
+        FrostHook.LogLine($"hooked mTitleInfo | ps3spid:{mTitleInfo.mPS3SPID}, c_ver:{mTitleInfo.mClientVersion}, plat:{mTitleInfo.mPlatformOverride}");
     }
 }
