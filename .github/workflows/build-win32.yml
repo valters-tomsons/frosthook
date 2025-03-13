@@ -2,9 +2,9 @@ name: win-x86
 
 on:
   push:
-    branches: ["main"]
+    branches: ["csharp"]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "csharp" ]
 
 jobs:
   build:
