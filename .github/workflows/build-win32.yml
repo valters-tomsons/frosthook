@@ -2,9 +2,9 @@ name: win-x86
 
 on:
   push:
-    branches: ["zig"]
+    branches: ["main"]
   pull_request:
-    branches: [ "zig" ]
+    branches: [ "main" ]
 
 jobs:
   build:
