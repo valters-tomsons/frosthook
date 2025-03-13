@@ -1,7 +1,4 @@
-bin
-obj
-
-frosthook-win-x86
-frosthook-win-x64
+.zig-cache
+zig-out
 
 .vscode

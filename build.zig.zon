@@ -1,0 +1,11 @@
+.{
+    .name = "frosthook",
+    .version = "0.0.0",
+    .paths = .{""},
+    .dependencies = .{
+        .@"zignature-scanner" = .{
+            .url = "git+https://github.com/Zig-Sec/zignature-scanner.git#886b401b1a795338cefa8128d3574a9a0d8a3ac7",
+            .hash = "1220903ba219ba2630ce00d974a300e74d3f7aba38fa24522c799b5c416d4712f87b",
+        },
+    },
+}

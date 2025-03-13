@@ -2,28 +2,27 @@ name: win-x86
 
 on:
   push:
-    branches: ["main"]
+    branches: ["zig"]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "zig" ]
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-      - name: Install .NET SDK
-        uses: actions/setup-dotnet@v4
+          submodules: 'true'
+      - name: Install zig
+        uses: mlugg/setup-zig@v1
         with:
-          dotnet-version: 9.0.100-preview.4.24267.66
-      - name: Restore
-        run: dotnet restore
-      - name: Build frosthook
-        run: dotnet publish src/ -c Release -r win-x86 -o ./frosthook-win-x86
+          version: 0.13.0
+      - name: Build
+        run: zig build
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: frosthook-win-x86
-          path: "./frosthook-win-x86"
+          name: dinput8.dll
+          path: zig-out/bin/dinput8.dll
+
