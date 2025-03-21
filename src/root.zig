@@ -24,6 +24,8 @@ pub export fn DllMain(hModule: win.HINSTANCE, reason: win.DWORD, _: ?win.LPVOID)
     console.initialize("frosthook");
 
     proxy();
+
+    console.pause("Press ENTER to start...");
     install();
 
     return win.TRUE;
