@@ -39,13 +39,13 @@ pub fn apply() !void {
 
 var create_file_a_ptr: *const @TypeOf(create_file_a_impl) = undefined;
 fn create_file_a_impl(fileName: win.LPCSTR, desiredAccess: win.DWORD, shareMode: win.DWORD, securityAttributes: ?*anyopaque, disposition: win.DWORD, flags: win.DWORD, templateFile: win.HANDLE) callconv(win.WINAPI) win.HANDLE {
-    console.logFmt("CreateFileA hook called: {s}", .{fileName});
+    console.logNoticeFmt("CreateFileA: {s}", .{fileName});
     return create_file_a_ptr(fileName, desiredAccess, shareMode, securityAttributes, disposition, flags, templateFile);
 }
 
 var fesl_title_params_init_ptr: *const @TypeOf(fesl_title_params_init_impl) = undefined;
 fn fesl_title_params_init_impl(this: *anyopaque, sku: win.LPCSTR, clientVersion: win.LPCSTR, clientString: win.LPCSTR, feslPort: win.INT, env: frostbite.FESL_ENVIRONMENT) callconv(.Thiscall) void {
-    console.log("FeslTitleParametersInit hook called!");
+    console.logNotice("FeslTitleParametersInit hook called!");
 
     console.logFmt("SKU: {s}", .{sku});
     console.logFmt("Client Version: {s}", .{clientVersion});
@@ -58,7 +58,7 @@ fn fesl_title_params_init_impl(this: *anyopaque, sku: win.LPCSTR, clientVersion:
 
 var fesl_gmhgi_backup_msg_ptr: *const @TypeOf(fesl_gmhgi_backup_msg_impl) = undefined;
 fn fesl_gmhgi_backup_msg_impl(this: *anyopaque, size: u32, data: [*]const u8, player: i32) callconv(.Thiscall) u8 {
-    console.log("Fesl::GameManagerHostedGameImpl::BackupMessage() hook called!");
+    console.logNotice("Fesl::GameManagerHostedGameImpl::BackupMessage() hook called!");
     console.logFmt("Size: {d}", .{size});
     console.logFmt("Player: {d}", .{player});
     return fesl_gmhgi_backup_msg_ptr(this, size, data, player);
