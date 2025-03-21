@@ -30,6 +30,11 @@ pub fn apply() !void {
     try minhook.createHook(@ptrFromInt(fesl_title_params_init_address), @ptrCast(&fesl_title_params_init_impl), @ptrCast(&fesl_title_params_init_ptr));
     try minhook.enableHook(@ptrFromInt(fesl_title_params_init_address));
     console.log("FeslTitleParametersInit hook installed!");
+
+    const fesl_gmhgi_backup_msg_address = 0x012e7500;
+    try minhook.createHook(@ptrFromInt(fesl_gmhgi_backup_msg_address), @ptrCast(&fesl_gmhgi_backup_msg_impl), @ptrCast(&fesl_gmhgi_backup_msg_ptr));
+    try minhook.enableHook(@ptrFromInt(fesl_gmhgi_backup_msg_address));
+    console.log("Fesl::GameManagerHostedGameImpl::BackupMessage() hook installed!");
 }
 
 var create_file_a_ptr: *const @TypeOf(create_file_a_impl) = undefined;
@@ -49,4 +54,12 @@ fn fesl_title_params_init_impl(this: *anyopaque, sku: win.LPCSTR, clientVersion:
     console.logFmt("Environment: {s}", .{@tagName(env)});
 
     fesl_title_params_init_ptr(this, sku, clientVersion, clientString, feslPort, env);
+}
+
+var fesl_gmhgi_backup_msg_ptr: *const @TypeOf(fesl_gmhgi_backup_msg_impl) = undefined;
+fn fesl_gmhgi_backup_msg_impl(this: *anyopaque, size: u32, data: [*]const u8, player: i32) callconv(.Thiscall) u8 {
+    console.log("Fesl::GameManagerHostedGameImpl::BackupMessage() hook called!");
+    console.logFmt("Size: {d}", .{size});
+    console.logFmt("Player: {d}", .{player});
+    return fesl_gmhgi_backup_msg_ptr(this, size, data, player);
 }
