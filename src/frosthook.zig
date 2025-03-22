@@ -14,20 +14,6 @@ pub fn apply() !void {
     const proc = try utils.getModuleInfo();
     console.logFmt("Base address: 0x{X}", .{proc.BaseAddress});
 
-    // Seems to crash on windows 10, doesn't crash on linux/wine
-
-    // const kernel32_handle = winapi.LoadLibraryA("kernel32") orelse {
-    //     return error.FailedToLoadKernel32;
-    // };
-
-    // const createFile_address = winapi.GetProcAddress(kernel32_handle, "CreateFileA") orelse {
-    //     return error.FailedToGetMethodAddress;
-    // };
-
-    // try minhook.createHook(createFile_address, @ptrCast(&create_file_a_impl), @ptrCast(&create_file_a_ptr));
-    // try minhook.enableHook(createFile_address);
-    // console.log("CreateFileA hook installed!");
-
     const fesl_title_params_init_address = 0x01315860;
     try minhook.createHook(@ptrFromInt(fesl_title_params_init_address), @ptrCast(&fesl_title_params_init_impl), @ptrCast(&fesl_title_params_init_ptr));
     try minhook.enableHook(@ptrFromInt(fesl_title_params_init_address));
