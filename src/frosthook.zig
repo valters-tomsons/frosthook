@@ -14,6 +14,8 @@ pub fn apply() !void {
     const proc = try utils.getModuleInfo();
     console.logFmt("Base address: 0x{X}", .{proc.BaseAddress});
 
+    try patch_version();
+
     const fesl_title_params_init_address = 0x01315860;
     try minhook.createHook(@ptrFromInt(fesl_title_params_init_address), @ptrCast(&fesl_title_params_init_impl), @ptrCast(&fesl_title_params_init_ptr));
     try minhook.enableHook(@ptrFromInt(fesl_title_params_init_address));
@@ -25,6 +27,32 @@ pub fn apply() !void {
     console.log("Fesl::GameManagerHostedGameImpl::BackupMessage() hook installed!");
 }
 
+fn patch_version() !void {
+    const network_version_string_address = 0x1753910;
+    const version_string_ptr = @as(*[14:0]u8, @ptrFromInt(network_version_string_address));
+
+    var old_protect1: win.DWORD = undefined;
+    if (winapi.VirtualProtect(
+        version_string_ptr,
+        @sizeOf(u8),
+        win.PAGE_EXECUTE_READWRITE,
+        &old_protect1,
+    ) == 0) {
+        return error.ProtectionChangeFailed;
+    }
+    defer _ = winapi.VirtualProtect(
+        version_string_ptr,
+        @sizeOf(u8),
+        old_protect1,
+        &old_protect1,
+    );
+
+    const new_version_string = "\"RETAIL511118\"";
+
+    console.logFmt("Patching version from {s} to {s}", .{ version_string_ptr.*, new_version_string });
+    @memcpy(version_string_ptr, new_version_string);
+}
+
 var create_file_a_ptr: *const @TypeOf(create_file_a_impl) = undefined;
 fn create_file_a_impl(fileName: win.LPCSTR, desiredAccess: win.DWORD, shareMode: win.DWORD, securityAttributes: ?*anyopaque, disposition: win.DWORD, flags: win.DWORD, templateFile: win.HANDLE) callconv(win.WINAPI) win.HANDLE {
     console.logNoticeFmt("CreateFileA: {s}", .{fileName});
@@ -33,7 +61,7 @@ fn create_file_a_impl(fileName: win.LPCSTR, desiredAccess: win.DWORD, shareMode:
 
 var fesl_title_params_init_ptr: *const @TypeOf(fesl_title_params_init_impl) = undefined;
 fn fesl_title_params_init_impl(this: *anyopaque, sku: win.LPCSTR, clientVersion: win.LPCSTR, clientString: win.LPCSTR, feslPort: win.INT, env: frostbite.FESL_ENVIRONMENT) callconv(.Thiscall) void {
-    console.logNotice("FeslTitleParametersInit hook called!");
+    console.logNotice("FeslTitleParametersInit() called!");
 
     console.logFmt("SKU: {s}", .{sku});
     console.logFmt("Client Version: {s}", .{clientVersion});
@@ -46,7 +74,7 @@ fn fesl_title_params_init_impl(this: *anyopaque, sku: win.LPCSTR, clientVersion:
 
 var fesl_gmhgi_backup_msg_ptr: *const @TypeOf(fesl_gmhgi_backup_msg_impl) = undefined;
 fn fesl_gmhgi_backup_msg_impl(this: *anyopaque, size: u32, data: [*]const u8, player: i32) callconv(.Thiscall) u8 {
-    console.logNotice("Fesl::GameManagerHostedGameImpl::BackupMessage() hook called!");
+    console.logNotice("GMHostedGame::BackupMessage() called!");
     console.logFmt("Size: {d}", .{size});
     console.logFmt("Player: {d}", .{player});
     return fesl_gmhgi_backup_msg_ptr(this, size, data, player);
